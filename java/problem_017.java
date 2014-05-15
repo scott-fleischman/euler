@@ -4,7 +4,7 @@ import java.io.*;
 
 public class problem_017
 {
-    static String getWordUnderTwenty(int numberUnderTwenty)
+	static String getWordUnderTwenty(int numberUnderTwenty)
 	{
 		switch (numberUnderTwenty)
 		{

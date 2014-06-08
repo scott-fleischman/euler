@@ -1,12 +1,9 @@
 import Data.Char
 import Data.List
-import Text.ParserCombinators.Parsec
+import Control.Applicative
+import Text.ParserCombinators.Parsec hiding (many)
 
-quotedName = do
-  char '"'
-  name <- many (noneOf "\"")
-  char '"'
-  return name
+quotedName = char '"' *> many (noneOf "\"") <* char '"'
 
 quotedNames = sepBy quotedName (char ',')
 

@@ -1,53 +1,46 @@
-isLeapYear :: Int -> Bool
-isLeapYear y = y `mod` 4 == 0 && (y `mod` 100 /= 0 || y `mod` 400 == 0)
+import Data.List
 
 data Month = Jan | Feb | Mar | Apr | May | Jun | Jul | Aug | Sep | Oct | Nov | Dec
-  deriving (Eq, Show, Enum, Bounded)
+  deriving (Eq, Enum, Bounded, Show)
 
-getDayCount :: Int -> Month -> Int
-getDayCount y m
-  | elem m [Sep, Apr, Jun, Nov] = 30
-  | m == Feb && isLeapYear y = 29
-  | m == Feb = 28
-  | otherwise = 31
-
-data DayOfWeek = Sun | Mon | Tue | Wed | Thu | Fri | Sat
-  deriving (Eq, Show, Enum, Bounded)
-
-nextWrap :: (Eq a, Enum a, Bounded a) => a -> a
-nextWrap x
+succWrap :: (Eq a, Enum a, Bounded a) => a -> a
+succWrap x
   | x == maxBound = minBound
   | otherwise = succ x
 
-data Date = Date
-  {
-    year :: Int,
-    month :: Month,
-    day :: Int
-  }
+data Date = Date { year :: Int, month :: Month, day :: Int }
   deriving (Eq, Show)
 
-nextDate :: Date -> Date
-nextDate (Date y m d) = Date ny nm nd
-  where
-    mDays = getDayCount y m
-    nd
-      | d == mDays = 1
-      | otherwise = d + 1
-    nm
-      | nd == 1 = nextWrap m
-      | otherwise = m
-    ny
-      | d == mDays && nm == minBound = y + 1
-      | otherwise = y
+isLeapYear :: Int -> Bool
+isLeapYear x = x `mod` 4 == 0 && (x `mod` 100 /= 0 || x `mod` 400 == 0)
 
-next :: (Date, DayOfWeek) -> (Date, DayOfWeek)
-next (d, dow) = (nextDate d, nextWrap dow)
+daysInMonth :: Int -> Month -> Int
+daysInMonth _ Sep = 30
+daysInMonth _ Apr = 30
+daysInMonth _ Jun = 30
+daysInMonth _ Nov = 30
+daysInMonth y Feb
+  | isLeapYear y = 29
+  | otherwise = 28
+daysInMonth _ _ = 31
 
-datesStarting1900 = iterate next (Date 1900 Jan 1, Mon)
-datesStarting19Cent = dropWhile (\x -> fst x /= Date 1901 Jan 1) datesStarting1900
-dates20Cent = takeWhile (\x -> fst x /= Date 2001 Jan 1) datesStarting19Cent
-sundaysFirstDay20Cent = filter (\x -> snd x == Sun && day (fst x) == 1) dates20Cent 
+nextDay :: Date -> Date
+nextDay x
+  | daysInMonth (year x) (month x) /= day x = x { day = 1 + day x }
+  | month x /= maxBound = x { month = succ (month x), day = 1 }
+  | otherwise = Date { year = 1 + year x, month = minBound, day = 1 }
 
-main :: IO ()
-main = putStrLn $ show $ length sundaysFirstDay20Cent
+data DayOfWeek = Sun | Mon | Tue | Wed | Thu | Fri | Sat
+  deriving (Eq, Enum, Bounded, Show)
+
+nextPair :: (Date, DayOfWeek) -> (Date, DayOfWeek)
+nextPair (x, y) = (nextDay x, succWrap y)
+
+days :: (Date, DayOfWeek) -> [(Date, DayOfWeek)]
+days x = x : days (nextPair x)
+
+main = putStrLn . show . length .
+  filter (\x -> day (fst x) == 1 && snd x == Sun) .
+  takeWhile (\x -> year (fst x) <= 2000) .
+  dropWhile (\x -> year (fst x) == 1900 ) $
+  days (Date { year = 1900, month = Jan, day = 1 }, Mon)

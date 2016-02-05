@@ -8,7 +8,7 @@ let namesUrl = "https://projecteuler.net/project/resources/p022_names.txt"
 let splitNames (x : string) = x.Split [| ',' |]
 let removeQuotes x = Regex("^\"([A-Z]+)\"").Match(x).Groups.[1].Value
 let getCharValue x = int x - int 'A' + 1
-let getNameValue x = x |> Seq.map getCharValue |> Seq.sum
+let getNameValue = Seq.map getCharValue >> Seq.sum
 let getNameScore index value = (index + 1) * value
 
 let result =

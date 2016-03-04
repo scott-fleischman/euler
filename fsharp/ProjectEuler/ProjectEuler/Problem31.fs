@@ -1,9 +1,15 @@
 ﻿module Problem31
 
-let valuesToLimit limit n =
+type Way = { sum : int ; coins : int list }
+let emptyWay = { sum = 0; coins = [] }
+let addCoin c { sum = sum ; coins = coins } = { sum = c + sum ; coins = c :: coins }
+let isMatch n { sum = sum } = n = sum
+let combine { sum = sum1 ; coins = coins1 } { sum = sum2 ; coins = coins2 } = { sum = sum1 + sum2 ; coins = coins1 @ coins2 }
+
+let singleCoinWays limit n =
     Seq.initInfinite ((+) 1)
     |> Seq.takeWhile (fun x -> x * n <= limit)
-    |> Seq.scan (fun xs _ -> n :: xs) []
+    |> Seq.scan (fun w _ -> addCoin n w) emptyWay
     |> Seq.skip 1
     |> Seq.toList
 
@@ -12,14 +18,14 @@ let rec build n =
     | [] -> []
     | c :: cs as coins ->
         let rest = build n cs
-        let current = valuesToLimit n c
-        let currentMatches, currentRemaining = current |> List.partition (fun xs -> List.sum xs = n)
+        let current = singleCoinWays n c
+        let currentMatches, currentRemaining = current |> List.partition (isMatch n)
         let currentMatchesMore =
             currentRemaining
-            |> List.map (fun xs -> xs, build (n - List.sum xs) cs)
-            |> List.map (fun (xs, yss) -> List.map (fun ys -> xs @ ys) yss)
+            |> List.map (fun w -> w, build (n - w.sum) cs)
+            |> List.map (fun (w, ws) -> List.map (fun w' -> combine w w') ws)
             |> List.concat
-            |> List.where (fun xs -> List.sum xs = n)
+            |> List.where (isMatch n)
         currentMatches @ currentMatchesMore @ rest
 
 let answer =

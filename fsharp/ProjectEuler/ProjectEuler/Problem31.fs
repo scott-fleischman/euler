@@ -1,31 +1,18 @@
 ﻿module Problem31
 
-type Way = { sum : int }
-let emptyWay = { sum = 0 }
-let addCoin c { sum = sum } = { sum = c + sum }
-let isMatch n { sum = sum } = n = sum
-let combine { sum = sum1 } { sum = sum2 } = { sum = sum1 + sum2 }
+let (/?) n d = n % d = 0
+let intermediateSums limit n = [n..n..(limit - 1)]
 
-let singleCoinWays limit n =
-    Seq.initInfinite ((+) 1)
-    |> Seq.takeWhile (fun x -> x * n <= limit)
-    |> Seq.scan (fun w _ -> addCoin n w) emptyWay
-    |> Seq.skip 1
-    |> Seq.toList
-
-let rec build n =
+let rec countWays n =
     function
     | [] -> 0
-    | c :: cs as coins ->
-        let rest = build n cs
-        let current = singleCoinWays n c
-        let currentMatches, currentRemaining = current |> List.partition (isMatch n)
-        let currentMatchesMore =
-            currentRemaining
-            |> List.sumBy (fun w -> build (n - w.sum) cs)
-        List.length currentMatches + currentMatchesMore + rest
+    | c :: cs ->
+        let current = if n /? c then 1 else 0
+        let middle = intermediateSums n c |> List.sumBy(fun x -> countWays (n - x) cs)
+        let rest = countWays n cs
+        current + middle + rest
 
 let answer =
     let coins = [1; 2; 5; 10; 20; 50; 100; 200]
     let target = 200
-    build target coins
+    countWays target coins

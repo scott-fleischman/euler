@@ -8,7 +8,7 @@ let rec countWays n =
     | [] -> 0
     | c :: cs ->
         let current = if n /? c then 1 else 0
-        let middle = intermediateSums n c |> List.sumBy(fun x -> countWays (n - x) cs)
+        let middle = intermediateSums n c |> List.sumBy (fun x -> countWays (n - x) cs)
         let rest = countWays n cs
         current + middle + rest
 

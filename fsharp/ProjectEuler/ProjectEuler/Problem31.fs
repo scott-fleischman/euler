@@ -1,10 +1,10 @@
 ﻿module Problem31
 
-type Way = { sum : int ; coins : int list }
-let emptyWay = { sum = 0; coins = [] }
-let addCoin c { sum = sum ; coins = coins } = { sum = c + sum ; coins = c :: coins }
+type Way = { sum : int }
+let emptyWay = { sum = 0 }
+let addCoin c { sum = sum } = { sum = c + sum }
 let isMatch n { sum = sum } = n = sum
-let combine { sum = sum1 ; coins = coins1 } { sum = sum2 ; coins = coins2 } = { sum = sum1 + sum2 ; coins = coins1 @ coins2 }
+let combine { sum = sum1 } { sum = sum2 } = { sum = sum1 + sum2 }
 
 let singleCoinWays limit n =
     Seq.initInfinite ((+) 1)

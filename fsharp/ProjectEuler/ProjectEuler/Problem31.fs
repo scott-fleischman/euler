@@ -15,21 +15,17 @@ let singleCoinWays limit n =
 
 let rec build n =
     function
-    | [] -> []
+    | [] -> 0
     | c :: cs as coins ->
         let rest = build n cs
         let current = singleCoinWays n c
         let currentMatches, currentRemaining = current |> List.partition (isMatch n)
         let currentMatchesMore =
             currentRemaining
-            |> List.map (fun w -> w, build (n - w.sum) cs)
-            |> List.map (fun (w, ws) -> List.map (fun w' -> combine w w') ws)
-            |> List.concat
-            |> List.where (isMatch n)
-        currentMatches @ currentMatchesMore @ rest
+            |> List.sumBy (fun w -> build (n - w.sum) cs)
+        List.length currentMatches + currentMatchesMore + rest
 
 let answer =
     let coins = [1; 2; 5; 10; 20; 50; 100; 200]
     let target = 200
-    let values = build target coins
-    values |> List.length
+    build target coins
